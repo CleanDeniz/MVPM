@@ -24,13 +24,14 @@ export default function App() {
     loadMe();
   }, []);
 
-  const phoneOk = !!me?.phone;
+  // Авторизация теперь по Telegram ID, без телефона
+  const authOk = !!me?.tg_id;
 
   return (
     <>
       {!me ? (
         <div className="p-4">Загрузка…</div>
-      ) : !phoneOk ? (
+      ) : !authOk ? (
         <PhoneGate onDone={loadMe} />
       ) : (
         <>
