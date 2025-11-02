@@ -64,6 +64,9 @@ app.use("/api", (req, res, next) => {
   const initData = req.header("x-telegram-init-data");
   console.log("initData:", initData ? initData.slice(0, 200) : "NO DATA");
 
+  res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "https://mvpm-puce.vercel.app");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
   if (!initData || !checkTelegramInitData(initData, BOT_TOKEN)) {
     return res.status(401).json({ ok: false, error: "UNAUTHORIZED" });
   }
@@ -81,6 +84,8 @@ app.use("/api", userRoutes());
 
 app.use("/api/admin", (req, res, next) => {
   const secret = req.header("x-admin-secret");
+  res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "https://mvpm-puce.vercel.app");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
   if (secret !== ADMIN_SECRET) {
     return res.status(401).json({ ok: false, error: "ADMIN_UNAUTHORIZED" });
   }
