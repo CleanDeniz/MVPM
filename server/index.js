@@ -33,17 +33,12 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: false },
 });
 
+// ✅ Настройка CORS
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin) {
-        console.log("⚙️ CORS: no origin (Telegram WebView) → allowed");
-        return callback(null, true);
-      }
-      if (allowedOrigins.includes(origin)) {
-        console.log("✅ CORS allowed for:", origin);
-        return callback(null, true);
-      }
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
       console.warn("❌ CORS blocked for:", origin);
       return callback(null, false);
     },
@@ -51,14 +46,28 @@ app.use(
   })
 );
 
+// ✅ Разрешаем preflight-запросы OPTIONS на все маршруты
+app.options("*", cors());
+
 app.use(express.json());
 
+// Лог запросов
 app.use((req, _res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
   next();
 });
 
+// ✅ Telegram guard для /api
 app.use("/api", (req, res, next) => {
+  // Разрешаем preflight-запросы без авторизации
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "https://mvpm-puce.vercel.app");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-telegram-init-data");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    return res.sendStatus(200);
+  }
+
   if (req.path.startsWith("/admin")) return next();
 
   const initData = req.header("x-telegram-init-data");
