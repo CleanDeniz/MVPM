@@ -9,17 +9,17 @@ export default function PhoneGate({ onDone }) {
 
     try {
       const user = tg?.initDataUnsafe?.user;
-      if (user) {
-        // Отправляем только Telegram ID и имя, без телефона
-        const r = await apiPost("/api/telegram-auth", {
-          tg_id: user.id,
-          name: user.first_name,
-          username: user.username || "",
-        });
-        if (r.ok) onDone();
-      } else {
-        alert("Не удалось получить данные Telegram");
+      if (!user) {
+        alert("Не удалось получить данные Telegram. Откройте мини-приложение в клиенте Telegram, а не в браузере.");
+        return;
       }
+      const r = await apiPost("/api/telegram-auth", {
+        tg_id: user.id,
+        name: user.first_name || "",
+        username: user.username || ""
+      });
+      if (r?.ok) onDone?.();
+      else alert("Ошибка авторизации: " + (r?.error || "UNKNOWN"));
     } catch (e) {
       console.error(e);
       alert("Ошибка авторизации через Telegram");

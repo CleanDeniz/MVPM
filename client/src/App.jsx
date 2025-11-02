@@ -14,22 +14,23 @@ export default function App() {
 
   async function loadMe() {
     const r = await apiGet("/api/me");
-    if (r.ok) setMe(r.user);
+    console.log("loadMe ->", r);
+    if (r?.ok) setMe(r.user);
+    else setMe({}); // чтобы не висеть бесконечно; сразу покажем PhoneGate
   }
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
-    tg?.expand();
-    tg?.ready();
+    try { tg?.expand(); tg?.ready(); } catch {}
     loadMe();
   }, []);
 
-  // Авторизация теперь по Telegram ID, без телефона
+  // Авторизация теперь по Telegram ID
   const authOk = !!me?.tg_id;
 
   return (
     <>
-      {!me ? (
+      {me === null ? (
         <div className="p-4">Загрузка…</div>
       ) : !authOk ? (
         <PhoneGate onDone={loadMe} />
